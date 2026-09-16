@@ -30,6 +30,11 @@ const LLM_MODEL = process.env.LLM_MODEL || 'glm-4.5-flash';
 const TV_KEY = process.env.TAVILY_API_KEY || '';
 const FORCE = process.env.FORCE === '1';
 
+/* 供 GitHub Actions 判断本次是否真的新写了文章（决定要不要发邮件） */
+function setOutput(line) {
+  if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, line + '\n');
+}
+
 const TYPES = ['应季食材', '节气养生', '专题分析', '热点辨析'];
 
 /* 专题分析可选主题（症状/体质 → 相关药材检索词，越具体越好） */
@@ -447,6 +452,7 @@ function normalize(text, meta) {
   const mdPath = path.join(DAILY, dateStr + '.md');
   if (fs.existsSync(mdPath) && !FORCE) {
     console.log(dateStr + ' 已有文章，跳过（FORCE=1 可覆盖）');
+    setOutput('generated=false');
     return;
   }
 
@@ -478,6 +484,7 @@ function normalize(text, meta) {
   if (process.env.DRY_RUN === '1') {
     console.log('DRY_RUN：仅做选题，不调用 AI。已用药材 ' + [...recentHerbs].join('、') +
       (recentTopics.size ? '；已用主题 ' + [...recentTopics].join('、') : ''));
+    setOutput('generated=false');
     return;
   }
 
@@ -502,6 +509,7 @@ function normalize(text, meta) {
     fallbackTitle: `${jq.name}·${herb.name}：今日本草日课`
   }), 'utf8');
   console.log('已写入 ' + path.relative(ROOT, mdPath));
+  setOutput('generated=true');
 
   execFileSync(process.execPath, [path.join(__dirname, 'md2wechat.js'), dateStr], { stdio: 'inherit' });
   execFileSync(process.execPath, [path.join(__dirname, 'build-daily.js')], { stdio: 'inherit' });
