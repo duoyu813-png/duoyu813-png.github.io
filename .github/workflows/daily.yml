@@ -28,6 +28,7 @@ jobs:
           node-version: '20'
 
       - name: 生成本草日课
+        id: gen
         env:
           LLM_API_KEY: ${{ secrets.ZHIPU_API_KEY }}
           LLM_BASE_URL: https://open.bigmodel.cn/api/paas/v4
@@ -35,6 +36,18 @@ jobs:
           TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
           FORCE: ${{ inputs.force && '1' || '' }}
         run: node tools/generate-daily.js
+
+      - name: 发送邮件
+        if: steps.gen.outputs.generated == 'true'
+        continue-on-error: true
+        env:
+          MAIL_USER: ${{ secrets.MAIL_USER }}
+          MAIL_PASS: ${{ secrets.MAIL_PASS }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
+          MAIL_HOST: ${{ secrets.MAIL_HOST }}
+          MAIL_PORT: ${{ secrets.MAIL_PORT }}
+        run: node tools/send-mail.js
 
       - name: 提交并推送
         run: |
