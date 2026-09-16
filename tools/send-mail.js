@@ -33,7 +33,7 @@ const USER = process.env.MAIL_USER || '';
 const PASS = process.env.MAIL_PASS || '';
 const FROM = process.env.MAIL_FROM || USER;
 const TO = process.env.MAIL_TO || 'baibai159@foxmail.com';
-const SITE_URL = process.env.SITE_URL || 'https://duoyu813-png.github.io/bencao-shiyi/';
+const SITE_URL = process.env.SITE_URL || 'https://duoyu813-png.github.io/';
 
 /* ---------- 日期 ---------- */
 function pickDate() {
